@@ -6,21 +6,55 @@ package
 	import starling.events.Event;
 	import starling.events.TouchEvent;
 	import starling.textures.Texture;
+	import starling.textures.TextureAtlas;
+	
+	
 
 	public class Game extends Sprite
 	{
 		
-		[Embed(source = "/assets/twitter.png")]
-		public static const TwitterImage:Class;
+		//[Embed(source = "/assets/twitter.png")]
+		//public static const TwitterImage:Class;
 		
 		[Embed(source="/assets/fonts/lcd.ttf", embedAsCFF="false", fontFamily="Dots")]
 		private static const Dots:Class;
 		
-		[Embed(source = "/assets/pause.png")]
-		public static const PauseImage:Class;
+		//[Embed(source = "/assets/pause.png")]
+		//public static const PauseImage:Class;
+		
+		//[Embed(source = "/assets/left.png")]
+		//public static const LeftImage:Class;
+		
+		//[Embed(source = "/assets/right.png")]
+		//public static const RightImage:Class;
+		
+		//[Embed(source = "/assets/body.png")]
+		//public static const BodyImage:Class;
+		
+		// Embed the Atlas XML
+		[Embed(source="/assets/sprites.xml", mimeType="application/octet-stream")]
+		public static const AtlasXml:Class;
+		
+		// Embed the Atlas Texture:
+		[Embed(source="/assets/sprites.png")]
+		public static const AtlasTexture:Class;
+		
+		public static var atlas:TextureAtlas;
 		
 		public function Game() {
-			addEventListener(Event.ADDED_TO_STAGE, init);			
+			
+			var texture:Texture = Texture.fromBitmap(new AtlasTexture());
+			var xml:XML = XML(new AtlasXml());
+			atlas = new TextureAtlas(texture, xml);
+			
+			if (GiroVault.settings.hasOwnProperty('isMuted')) {
+				isMuted = GiroVault.settings.isMuted;			
+			}
+			if (GiroVault.settings.hasOwnProperty('useAccelerometer')) {
+				useAccelerometer = GiroVault.settings.useAccelerometer;			
+			}
+			addEventListener(Event.ADDED_TO_STAGE, init);	
+			
 		}
 		
 		private function init(e:Event):void {		
@@ -32,10 +66,12 @@ package
 		
 	}
 }
+
 var useFilter:Boolean = true;
+
+
 import com.adobe.nativeExtensions.Vibration;
 import com.palDeveloppers.ane.NativeTwitter;
-import com.sticksports.nativeExtensions.SilentSwitch;
 import com.sticksports.nativeExtensions.gameCenter.GCLeaderboard;
 import com.sticksports.nativeExtensions.gameCenter.GCScore;
 import com.sticksports.nativeExtensions.gameCenter.GameCenter;
@@ -52,8 +88,10 @@ import flash.events.MouseEvent;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.geom.Vector3D;
+import flash.media.AudioPlaybackMode;
 import flash.media.Sound;
 import flash.media.SoundChannel;
+import flash.media.SoundMixer;
 import flash.media.SoundTransform;
 import flash.net.getClassByAlias;
 import flash.sensors.Accelerometer;
@@ -64,6 +102,8 @@ import flash.utils.getQualifiedClassName;
 import flash.utils.getTimer;
 import flash.utils.setInterval;
 import flash.utils.setTimeout;
+
+import so.cuo.platform.admob.Admob;
 
 import starling.core.Starling;
 import starling.core.starling_internal;
@@ -81,11 +121,20 @@ import starling.utils.HAlign;
 import starling.utils.VAlign;
 import starling.utils.deg2rad;
 
+var deadCounter:Number = 0;
+var admob:Admob;
+var deaths:Object = {};
 var startImg:Image;
 var introImg:Image;
 var pauseImg:Image;
+var exitImg:Image;
+var leaderboardImg:Image;
+var body:Image;
 
 var twitterImg:Image;
+
+var leftImg:Image;
+var rightImg:Image;
 
 var main:Game;
 var SCR_WIDTH:int = 465, SCR_HEIGHT:int = 465;
@@ -107,19 +156,23 @@ var rotationReverse:Boolean = false;
 var accel:Accelerometer = new Accelerometer();
 
 var scoreTextField:TextField;
-var tweetTextField:TextField;
-var pausedTextField:TextField;
+//var tweetTextField:TextField;
+//var pausedTextField:TextField;
+//var useAccelerometerTextField:TextField;
 var beginTextField:TextField;
 var menuTextField:TextField;
 var endTextField:TextField;
 var loadingTextField:TextField;
+var useAccelerometerImg:Image;
+var backImg:Image;
+var soundImg:Image;
 
 var backgroundSe:Snd;
 var blur:BlurFilter;
 
-const MENU_MSG:String = "GIROVAULT\n\n\nTAP\nTO\nSTART\n\n\n\n\n\n\n\%LEADERBOARD%";
+const MENU_MSG:String = "GIROVAULT\n\n\nTAP\nTO\nSTART";
 const BEGIN_MSG:String = "ESCAPE\nFROM\nGIROVAULT";
-const END_MSG:String = "GAME OVER\n\n%TWEET%\nMY SCORE IS %SCORE%\n\nTAP TO START\n\n\n\n\n\n\nEXIT";
+const END_MSG:String = "GAME OVER\n\nYOUR SCORE IS %SCORE%\n\nTAP TO START";
 
 const TWEET1:String = "So bad";//<=300
 const TWEET2:String = "Oh, damn";//<=600
@@ -131,11 +184,11 @@ const TWEET7:String = "Marvelous";//<=5000
 const TWEET8:String = "Almost perfect"; //<=6000
 const TWEET9:String = "First"; //<=9000
 
-const TWEET_MSG:String = "TWEET THIS";
-const PAUSED_MSG:String = "PAUSED\n\nSOUND: %SOUND%";
-const LEADERBOARD_MSG:String = "LEADERBOARD";
-const ON_MSG:String = "ON";
-const OFF_MSG:String = "OFF";
+//const TWEET_MSG:String = "TWEET THIS";
+//const PAUSED_MSG:String = "TAP TO BACK\n\nSOUND: %SOUND%\n\nACCELEROMETER: %ACCEL%";
+//const LEADERBOARD_MSG:String = "LEADERBOARD";
+//const ON_MSG:String = "ON";
+//const OFF_MSG:String = "OFF";
 const LOADING_MSG:String = "LOADING";
 
 var default_leaderboard:String = "GiroVaultHighScore";
@@ -162,7 +215,8 @@ function initializeFirst():void {
 	rotationSpeed = rotationSpeedOri;
 	
 	//silent switch support
-	SilentSwitch.apply();
+	//SilentSwitch.apply();
+	SoundMixer.audioPlaybackMode  =  AudioPlaybackMode.AMBIENT;
 	
 	if (GameCenter.isSupported) {
 		supportGameCenter = true;
@@ -193,6 +247,9 @@ function initializeFirst():void {
 	tex = starling.textures.Texture.fromBitmapData(bd);
 	img = new Image(tex);
 	
+	admob = Admob.getInstance();
+	admob.setKeys("ca-app-pub-6227096075586763/4992569993");
+	admob.cacheInterstitial();
 	//backgroundSe = new Snd("AudioBackground");
 		
 	//var blur:BlurFilter = new BlurFilter(1,1,0.9);	
@@ -212,31 +269,40 @@ function initializeFirst():void {
 	
 	endTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
 	endTextField.hAlign = HAlign.CENTER;
-	endTextField.vAlign = VAlign.BOTTOM;
+	endTextField.vAlign = VAlign.CENTER;
 	
 	menuTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
 	menuTextField.hAlign = HAlign.CENTER;
-	menuTextField.vAlign = VAlign.BOTTOM;
+	menuTextField.vAlign = VAlign.CENTER;
 	
-	tweetTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
-	tweetTextField.hAlign = HAlign.CENTER;
-	tweetTextField.vAlign = VAlign.CENTER;
+	//tweetTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
+	//tweetTextField.hAlign = HAlign.CENTER;
+	//tweetTextField.vAlign = VAlign.CENTER;
 	
-	pausedTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
-	pausedTextField.hAlign = HAlign.CENTER;
-	pausedTextField.vAlign = VAlign.CENTER;	
+	//pausedTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
+	//pausedTextField.hAlign = HAlign.CENTER;
+	//pausedTextField.vAlign = VAlign.CENTER;	
+	
+	//useAccelerometerTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
+	//useAccelerometerTextField.hAlign = HAlign.CENTER;
+	//useAccelerometerTextField.vAlign = VAlign.CENTER;	
+	
 	
 	loadingTextField = new TextField(SCR_WIDTH, SCR_HEIGHT, "", "Dots", 32, Color.BLACK);
 	loadingTextField.hAlign = HAlign.CENTER;
 	loadingTextField.vAlign = VAlign.CENTER;
 	
-	pauseImg = new Image(starling.textures.Texture.fromBitmap(new Game.PauseImage()));
+	//pauseImg = new Image(starling.textures.Texture.fromBitmap(new Game.PauseImage()));
+	pauseImg = new Image(Game.atlas.getTexture("pause"));
+	//twitterImg = new Image(starling.textures.Texture.fromBitmap(new Game.TwitterImage()));
 	
-	twitterImg = new Image(starling.textures.Texture.fromBitmap(new Game.TwitterImage()));
 	
 	main.addChild(new Image(starling.textures.Texture.fromBitmapData(new BitmapData(scr.pixelSize.x, scr.pixelSize.y, false, bgColor))));
-
-
+	
+	//leftImg = new Image(starling.textures.Texture.fromBitmap(new Game.LeftImage()));
+	//rightImg = new Image(starling.textures.Texture.fromBitmap(new Game.RightImage()));
+	leftImg = new Image(Game.atlas.getTexture("left"));
+	rightImg = new Image(Game.atlas.getTexture("right"));
 	//backround1 = new Game.AudioBackground1();
 	//backround1.play(0,999999);
 	//backgroundSe.play(9999999);
@@ -248,6 +314,7 @@ function initializeFirst():void {
 
 	pauseImg.x = 10;
 	pauseImg.y = 10;
+	pauseImg.name = 'pause';
 	main.addChild(pauseImg);
 	pauseImg.visible = false;
 	
@@ -259,36 +326,82 @@ function initializeFirst():void {
 	endTextField.visible = false;
 	main.addChild(endTextField);
 	
-	pausedTextField.text = PAUSED_MSG.replace('%SOUND%',ON_MSG);
-	pausedTextField.visible = false;
-	main.addChild(pausedTextField);
-
+	//pausedTextField.text = PAUSED_MSG.replace('%SOUND%',ON_MSG).replace('%ACCEL%',OFF_MSG);
+	//pausedTextField.visible = false;
+	//main.addChild(pausedTextField);
+	
 	loadingTextField.text = LOADING_MSG;
 	//loadingTextField.visible = false;
 	//main.addChild(loadingTextField);
 	
+	soundImg = new Image(Game.atlas.getTexture("sound-on"));
+	useAccelerometerImg = new Image(Game.atlas.getTexture("accel-on"));
+	backImg = new Image(Game.atlas.getTexture("back"));
 	
 	//soundTextField.text = SOUND_MSG+" "+ON_MSG;
 	//soundTextField.visible = false;
 	//soundTextField.y = pausedTextField.y + 50;
 	//main.addChild(soundTextField);
 
-	tweetTextField.text = TWEET_MSG;
-	tweetTextField.visible = false;
-	tweetTextField.y = endTextField.y + 200;
-	main.addChild(tweetTextField);
+	//tweetTextField.text = TWEET_MSG;
+	//tweetTextField.visible = false;
+	//tweetTextField.y = endTextField.y + 200;
+	//main.addChild(tweetTextField);
 	
-	twitterImg.x = 325;
-	twitterImg.y = 487;
+	
+	backImg.x = SCR_WIDTH /2 - backImg.width/2;
+	backImg.y = SCR_HEIGHT /2 - backImg.height;
+	backImg.name = 'back';
+	backImg.visible = false;
+	main.addChild(backImg);
+
+	useAccelerometerImg.x = SCR_WIDTH /2 - useAccelerometerImg.width/2;
+	useAccelerometerImg.y = backImg.y+useAccelerometerImg.height;
+	useAccelerometerImg.name = 'accelerometer';
+	useAccelerometerImg.visible = false;
+	main.addChild(useAccelerometerImg);
+
+	soundImg.x = SCR_WIDTH /2 - soundImg.width/2;
+	soundImg.y = useAccelerometerImg.y+soundImg.height;
+	soundImg.name = 'sound';
+	soundImg.visible = false;
+	main.addChild(soundImg);
+	
+	twitterImg = new Image(Game.atlas.getTexture("twitter"));
+	twitterImg.x = SCR_WIDTH /2 - twitterImg.width/2;
+	twitterImg.y = endTextField.textBounds.bottom+42;
+	twitterImg.name = 'twitter';
 	twitterImg.visible = false;
 	main.addChild(twitterImg);
 	
-	if (supportGameCenter) {
-		menuTextField.text = MENU_MSG.replace('%LEADERBOARD%',LEADERBOARD_MSG);
-	} else {
-		menuTextField.text = MENU_MSG.replace('%LEADERBOARD%',"\n");
-	}
+	leftImg.x = 0;
+	leftImg.y = SCR_HEIGHT - 74;
+	leftImg.name = 'left';
+	leftImg.visible = false;
+	main.addChild(leftImg);
+			
+	rightImg.x = SCR_WIDTH - 189;
+	rightImg.y = SCR_HEIGHT - 74;
+	rightImg.name = 'right';
+	rightImg.visible = false;
+	main.addChild(rightImg);
 	
+	leaderboardImg = new Image(Game.atlas.getTexture("leaderboard"));
+	leaderboardImg.x = SCR_WIDTH /2 - leaderboardImg.width/2;
+	leaderboardImg.y = SCR_HEIGHT - leaderboardImg.height;
+	leaderboardImg.name = 'leaderboard';
+	leaderboardImg.visible = (supportGameCenter) ? true : false;
+	main.addChild(leaderboardImg);
+	
+	exitImg = new Image(Game.atlas.getTexture("exit"));
+	exitImg.x = SCR_WIDTH /2 - exitImg.width/2;
+	exitImg.y = SCR_HEIGHT - exitImg.height;
+	exitImg.name = 'exit';
+	exitImg.visible = false;
+	main.addChild(exitImg);
+	
+
+	menuTextField.text = MENU_MSG;
 	menuTextField.visible = true;
 	main.addChild(menuTextField);
 	
@@ -434,7 +547,7 @@ class Scr {
 						lp = letterPatterns[lpIndex++];
 						d = 0;
 					}
-					if (lp & 1 > 0) lStr += "1";
+					if ((lp & 1) > 0) lStr += "1";
 					else lStr += " ";
 					lp >>= 1;
 				}
@@ -694,13 +807,14 @@ class Ptc {
 var mse:Mse;
 class Mse {
 	public var pos:Vct = new Vct;
+	public var touch:Touch;
 	public var isPressing:Boolean;
 	public function Mse() {		
 		main.addEventListener(TouchEvent.TOUCH,handleTouch);
 	}
 	
 	private function handleTouch(e:TouchEvent):void {		
-		var touch:Touch = e.getTouch(main.stage);
+		touch = e.getTouch(main.stage);
 		if (!touch)
 			return;
 		var mousePos:Point = touch.getLocation(main.stage);
@@ -728,26 +842,40 @@ class Mse {
 	private function handleHUD():Boolean {
 		//pause
 		if (isInGame) {
-			if (!isPaused && pos.x > 0 && pos.x < 35 && pos.y > 0 && pos.y < 35) {
+			if (!isPaused && touch.target is Image && touch.target.name == 'pause') {
 				trace('pause true');
 				isPaused = true;
 				clearInterval(currentTimer);	
 				return true;
-			} else if (isPaused && pos.x > 117 && pos.x < 297 && pos.y > 250 && pos.y < 282) {
+			} else if (isPaused && touch.target is Image && touch.target.name == 'back') {
 				trace('pause false');			
 				isPaused = false;
 				currentTimer = setInterval(rotateStage,rotationSpeed);
 				return true;
 			}
 			//sound
-			else if (isPaused && pos.x > 117 && pos.x < 297 && pos.y > 315 && pos.y < 353){
+			else if (isPaused && touch.target is Image && touch.target.name == 'sound'){
 				isMuted = !isMuted;	
+				GiroVault.settings.isMuted = isMuted;
+				Cache.save(GiroVault.settings,'girovault-settings');
+				return true;
+			} else if (isPaused && touch.target is Image && touch.target.name == 'accelerometer') {
+				
+				useAccelerometer = !useAccelerometer;	
+				
+				key.dispose();
+				key = new Key();
+				
+				GiroVault.settings.useAccelerometer = useAccelerometer;
+				Cache.save(GiroVault.settings,'girovault-settings');
+				
 				return true;
 			}
 		} else {
 			//leaderboard
 			if (supportGameCenter) {
-				if (isInMenu && !isPaused && !isInGame && pos.x > 95 && pos.x < 327 && pos.y > 385 && pos.y < 600) {				
+				if (isInMenu && !isPaused && !isInGame && touch.target is Image && touch.target.name == 'leaderboard') {		
+					trace('leaderboard');
 					showLeaderboard();
 					return true;
 				}
@@ -755,13 +883,13 @@ class Mse {
 			
 			//tweet	
 			if (supportTwitter) {
-				if (!isInMenu && pos.x > 94 && pos.x < 366 && pos.y > 480 && pos.y < 523) {
+				if (!isInMenu && touch.target is Image && touch.target.name == 'twitter') {
 					tweetscore();
 					return true;
 				}
 			}
 			
-			if (!isInMenu && pos.x > 162 && pos.x < 253 && pos.y > 572 && pos.y < 601) {
+			if (!isInMenu && touch.target is Image && touch.target.name == 'exit') {
 				showMenu(true);
 				return true;
 			}
@@ -783,14 +911,29 @@ class Key {
 		main.stage.addEventListener(KeyboardEvent.KEY_DOWN, onPressed);
 		main.stage.addEventListener(KeyboardEvent.KEY_UP, onReleased);
 		main.addEventListener(TouchEvent.TOUCH,handleTouch);
-		accel.addEventListener(AccelerometerEvent.UPDATE, accelUpdateHandler);
+		
+		if (useAccelerometer) {
+			accel.addEventListener(AccelerometerEvent.UPDATE, accelUpdateHandler);
+			leftImg.visible = false;
+			rightImg.visible = false;
+		} else {
+			leftImg.visible = true;
+			rightImg.visible = true;
+		}
 	}
 	
-	private function accelUpdateHandler(event:AccelerometerEvent):void
+	public function dispose():void {
+		main.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onPressed);
+		main.stage.removeEventListener(KeyboardEvent.KEY_UP, onReleased);
+		main.removeEventListener(TouchEvent.TOUCH,handleTouch);
+		accel.removeEventListener(AccelerometerEvent.UPDATE, accelUpdateHandler);
+	}
+	
+	public function accelUpdateHandler(event:AccelerometerEvent):void
 	{
-		accelX = event.accelerationX.toFixed(3)*30;
-		accelY = event.accelerationY.toFixed(3)*30;
-		accelZ = event.accelerationZ.toFixed(3)*30;		
+		accelX = parseFloat(event.accelerationX.toFixed(3))*30;
+		accelY = parseFloat(event.accelerationY.toFixed(3))*30;
+		accelZ = parseFloat(event.accelerationZ.toFixed(3))*30;		
 		
 		touchLeft = false;
 		touchRight = false;
@@ -805,30 +948,50 @@ class Key {
 	}
 	
 	private function handleTouch(e:TouchEvent):void {		
-		var touch:Touch = e.getTouch(main.stage);
-		if (!touch)
+		var touches:Vector.<Touch> = e.getTouches(main.stage);
+		if (touches.length == 0){
 			return;
-		var mousePos:Point = touch.getLocation(main.stage);
-		
-		switch(touch.phase) {
-			case TouchPhase.BEGAN:				
-				touchJump = true;
-				break;
-			case TouchPhase.MOVED:
-				touchMoving = true;
-				
-				if (touch.globalY < touch.previousGlobalY){
-					touchJump = true;
-				}
-				
-				break;
-			case TouchPhase.ENDED:
-				touchJump = false;
-				touchMoving = false;
-				touchLeft = false;
-				touchRight = false;
-				break;
 		}
+		
+		if (touches.length >= 1)
+		{
+			for each(var touch:Touch in touches) {
+				var currentPos:Point  = touch.getLocation(main.stage);
+				//var previousPos:Point = touch.getPreviousLocation(main.stage);
+				//trace(touch.phase,touch.id,touch.target.name);
+				switch(touch.phase) {
+					case TouchPhase.BEGAN:	
+						if (!(touch.target is Image) || touch.target.name == null) {
+							touchJump = true;					
+						} 
+						if (!useAccelerometer && touch.target is Image && touch.target.name == 'left') {
+							touchLeft = true;
+						} 
+						if (!useAccelerometer && touch.target is Image && touch.target.name == 'right') {
+							touchRight = true;
+						}
+						break;
+					case TouchPhase.MOVED:
+						touchMoving = true;
+						
+						if (touch.globalY < touch.previousGlobalY){
+							touchJump = true;
+						}
+						
+						break;
+					case TouchPhase.ENDED:				
+						touchJump = false;
+						touchMoving = false;
+						touchLeft = false;
+						touchRight = false;
+						break;
+				}				
+			}
+
+		}
+		//var mousePos:Point = touch.getLocation(main.stage);
+		
+
 	}
 	
 	private function onPressed(e:KeyboardEvent):void {
@@ -907,6 +1070,7 @@ var score:int, ticks:int;
 var isInGame:Boolean;
 var isInMenu:Boolean;
 var isPaused:Boolean;
+var useAccelerometer:Boolean;
 var supportGameCenter:Boolean = false;
 var supportTwitter:Boolean = false;
 var wasClicked:Boolean, wasReleased:Boolean;
@@ -917,13 +1081,21 @@ function showMenu(s:Boolean):void {
 	if (s) {
 		menuTextField.visible = true;
 		isInMenu = true;
+		if (supportGameCenter) {
+			leaderboardImg.visible = true;			
+		}
 		isPaused = false;
 		isInGame = false;
 		endTextField.visible = false;
-		twitterImg.visible =false;
-		tweetTextField.visible = false;
+		exitImg.visible = false;
+		twitterImg.visible = false;
+		//tweetTextField.visible = false;
+		rightImg.visible = false;
+		leftImg.visible = false;
 	} else {
 		menuTextField.visible = false;
+		leaderboardImg.visible = false;
+		exitImg.visible = false;
 		isInMenu = false;
 	}
 }
@@ -946,14 +1118,17 @@ function beginGame():void {
 	ticks = 0;
 	beginTextField.visible = true;
 	endTextField.visible = false;
-	tweetTextField.visible = false;
+	exitImg.visible = false;
+	//tweetTextField.visible = false;
 	twitterImg.visible = false;
+	leftImg.visible = true;
+	rightImg.visible = true;	
 	rnd = new Rnd;
 	initialize();
 }
 
 function tweetscore():void {	
-	var msg:String = getTweetMsg()+". My score is %SCORE% in #GiroVault";
+	var msg:String = getTweetMsg()+". My score is %SCORE% in #GiroVaultGame";
 	msg = msg.replace("%SCORE%",score);
 	trace("tweetscore: "+msg);
 	try {
@@ -1026,14 +1201,16 @@ function endGame():Boolean {
 	pauseImg.visible = false;
 
 	if (supportTwitter) {
-		tweetTextField.visible = true;
+		//tweetTextField.visible = true;
 		twitterImg.visible = true;
 	}	
 
 	titleTicks = 30;
 	deadSe.play();
+	
+	
 	if (!isMuted && Vibration.isSupported){
-		var vibe:Vibration = new Vibration();
+		var vibe:* = new Vibration();
 		vibe.vibrate(2000);
 	}
 	return true;
@@ -1044,6 +1221,7 @@ function updateGame():void {
 	if (!isPaused) {
 		updateActors(Ptc.s);
 		update();
+		
 	}
 
 	scoreTextField.text = String(score);
@@ -1052,15 +1230,32 @@ function updateGame():void {
 	
 	if (isInGame && !beginTextField.visible && ticks<60) {
 		beginTextField.visible = true;
-	}
-	else if(beginTextField.visible && ticks>=60) {
+	} else if (beginTextField.visible && ticks>=60) {
 		beginTextField.visible = false;
 	}
 	
 	if (!isInGame) {		
 		if (!endTextField.visible && !isInMenu){
-			endTextField.text = END_MSG.replace("%SCORE%",score).replace("%TWEET%",getTweetMsg());
+			endTextField.text = END_MSG.replace("%SCORE%",score);
 			endTextField.visible = true;
+			exitImg.visible = true;
+			if (supportTwitter) {
+				twitterImg.visible = true;
+			}
+			leftImg.visible = false;
+			rightImg.visible = false;
+			deadCounter++;
+			deaths[score] = {pos:player.pos};
+			var rand:Number = Math.round(Math.random() * 2);
+			trace('dead counter: '+deadCounter+' -> '+rand);
+			if (deadCounter > 2 && rand == 0) {
+				if (admob.isInterstitialReady()){
+					admob.showInterstitial();
+				} else {
+					admob.cacheInterstitial();
+				}				
+			}
+
 		}
 		
 		if (mse.isPressing) {
@@ -1068,28 +1263,49 @@ function updateGame():void {
 		} else {
 			if (wasClicked) beginGame();
 			if (--titleTicks <= 0) wasReleased = true;
-		}
+		}		
 	}
 	if (isPaused) {
 		pauseImg.visible = false;
-		pausedTextField.visible = true;
+		backImg.visible = true;
+		useAccelerometerImg.visible = true;
+		soundImg.visible = true;
 		//soundTextField.visible = true;
 		beginTextField.visible = false;
+		leftImg.visible = false;
+		rightImg.visible = false;
 	}  else {
 		//soundTextField.visible = false;
-		pausedTextField.visible = false;
+		backImg.visible = false;
+		useAccelerometerImg.visible = false;
+		soundImg.visible = false;
 		if (isInGame) {
 			pauseImg.visible = true;
+			if (!useAccelerometer) {
+				leftImg.visible = true;
+				rightImg.visible = true;
+			}
 		}
 	}
 	
 	if (isMuted) {
-		pausedTextField.text = PAUSED_MSG.replace('%SOUND%',OFF_MSG);
+		soundImg.texture = Game.atlas.getTexture("sound-off");
+		//pausedTextField.text = PAUSED_MSG.replace('%SOUND%',OFF_MSG);
 		//soundTextField.text = SOUND_MSG+" "+OFF_MSG;
 	} else {
-		pausedTextField.text = PAUSED_MSG.replace('%SOUND%',ON_MSG);
+		soundImg.texture = Game.atlas.getTexture("sound-on");
+		//pausedTextField.text = PAUSED_MSG.replace('%SOUND%',ON_MSG);
 		//soundTextField.text = SOUND_MSG+" "+ON_MSG;
 	}
+	
+	if (useAccelerometer) {
+		useAccelerometerImg.texture = Game.atlas.getTexture("accel-on");
+		//pausedTextField.text = pausedTextField.text.replace('%ACCEL%',ON_MSG);			
+	} else {
+		useAccelerometerImg.texture = Game.atlas.getTexture("accel-off");
+		//pausedTextField.text = pausedTextField.text.replace('%ACCEL%',OFF_MSG);
+	}
+	
 	updateActors(Msg.s);	
 }
 
@@ -1112,12 +1328,14 @@ function getTweetMsg():String {
 		return TWEET8;
 	} else if (score >= 9000) {
 		return TWEET9;
+	} else {
+		return TWEET1;		
 	}
 }
 
 function onActivated(e:Event):void {
 	isPaused = false;
-	SilentSwitch.apply();
+	//SilentSwitch.apply();
 }
 function onDectivated(e:Event):void {
 	if (isInGame) isPaused = true;
@@ -1167,8 +1385,11 @@ function initialize():void {
 	if (!isInGame) rank = 3;
 	else rank = 0;
 	addFloor(scr.size.y);
-	floors[4].pos.x = scr.center.x - floors[4].pwidth / 2;
+	floors[4].pos.x = player.pos.x;
+	floors[4].pos.y = player.pos.y + 12;
+	//floors[4].pos.x = scr.center.x - floors[4].pwidth / 2;
 	floors[5].pos.x = floors[4].pos.x + scr.size.x;
+	floors[5].pos.y = scr.size.y;
 }
 function update():void {
 	updateActors(floors);
@@ -1363,6 +1584,13 @@ class Floor {
 			"1  1",
 			" 11 ",
 		], 0]);
+	public var goldSpr:Spr = new Spr([
+		[Clr.magenta.i],[
+			" 11 ",
+			"1111",
+			"1111",
+			" 11 ",
+		], 0]);
 	public var pos:Vct = new Vct;
 	public var width:int, pwidth:int;
 	public var mirrorFloor:Floor;
@@ -1370,6 +1598,7 @@ class Floor {
 	public var rotate:int = -1, isRotateStart:Boolean;
 	public var arrowVel:Vct = new Vct;
 	public var beltVel:Vct = new Vct;
+	public var goldVel:Vct = new Vct;
 	public var beltTicks:Number = 0;
 	private static var arrowWays:Array = [1, 0, 0, 1, -1, 0, 0, -1];
 	public function setRandom(y:Number):void {
@@ -1395,6 +1624,7 @@ class Floor {
 		arrow = f.arrow;
 		rotate = f.rotate;
 		beltVel.xy = f.beltVel;
+		goldVel.xy = f.pos;
 		mirrorFloor = f;
 		f.mirrorFloor = this;
 	}

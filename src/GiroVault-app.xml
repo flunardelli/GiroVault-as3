@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<application xmlns="http://ns.adobe.com/air/application/3.6">
+<application xmlns="http://ns.adobe.com/air/application/13.0">
 
 <!-- Adobe AIR Application Descriptor File Template.
 
@@ -286,11 +286,10 @@
     </iPhone>
 <extensions>
         
-    <extensionID>com.palDeveloppers.ane.NativeTwitter</extensionID>
     
     <extensionID>com.sticksports.nativeExtensions.GameCenter</extensionID>
-    
-    <extensionID>com.sticksports.nativeExtensions.SilentSwitch</extensionID>
-    <extensionID>com.adobe.Vibration</extensionID>
+        <extensionID>com.palDeveloppers.ane.NativeTwitter</extensionID>
+        
+        <extensionID>com.adobe.Vibration</extensionID>
     </extensions>
 </application>

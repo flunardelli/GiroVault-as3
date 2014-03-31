@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<actionScriptProperties analytics="false" mainApplicationPath="GiroVault.as" projectUUID="64411201-6f2a-44ae-a301-611bc208ebdb" version="11">
-  <compiler additionalCompilerArguments="-locale en_US -swf-version=17" advancedTelemetry="false" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src" strict="false" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" useFlashSDK="true" verifyDigests="true" warn="true">
+<actionScriptProperties analytics="false" mainApplicationPath="GiroVault.as" projectUUID="fbe1e9ae-68f0-4313-b7e9-54d72d90c4b9" version="11">
+  <compiler additionalCompilerArguments="-locale en_US -swf-version=24" advancedTelemetry="false" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" useFlashSDK="true" verifyDigests="true" warn="true">
     <compilerSourcePath/>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
@@ -35,9 +35,9 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry kind="5" linkType="2" path="ane/admob_all_in_one6.6.7.ane"/>
       <libraryPathEntry kind="5" linkType="2" path="ane/GameCenter.ane"/>
       <libraryPathEntry kind="5" linkType="2" path="ane/NativeTwitter-101.ane"/>
-      <libraryPathEntry kind="5" linkType="2" path="ane/SilentSwitch.ane"/>
       <libraryPathEntry kind="5" linkType="2" path="ane/Vibration.ane"/>
     </libraryPath>
     <sourceAttachmentPath/>
@@ -52,50 +52,26 @@
   <buildCSSFiles/>
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
   <buildTargets>
-    <buildTarget buildTargetName="device" iosSettingsVersion="2" isCurrent="true" platformId="com.adobe.flexide.multiplatform.ios.platform" provisioningFile="C:/Users/lumea/Dropbox/Personal/cert/Fernando_Lunardelli.mobileprovision" releasePackageType="ipa-app-store">
-      <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" reducedSizePackaging="false" version="2"/>
-      <airSettings airCertificatePath="C:/Users/lumea/Dropbox/Personal/cert/Certificates.p12" airTimestamp="true" anePathSet="true" version="1">
+    <buildTarget buildTargetName="device" iosSettingsVersion="2" isCurrent="true" platformId="com.adobe.flexide.multiplatform.ios.platform" provisioningFile="/Users/fernandolunardelli/Dropbox/Personal/cert/Fernando_Lunardelli.mobileprovision" releasePackageType="ipa-app-store">
+      <airSettings airCertificatePath="/Users/fernandolunardelli/Dropbox/Personal/cert/Certificates.p12" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes/>
         <anePaths>
+          <anePathEntry path="ane/admob_all_in_one6.6.7.ane"/>
           <anePathEntry path="ane/GameCenter.ane"/>
           <anePathEntry path="ane/NativeTwitter-101.ane"/>
-          <anePathEntry path="ane/SilentSwitch.ane"/>
           <anePathEntry path="ane/Vibration.ane"/>
         </anePaths>
         <newLaunchParams/>
         <modifiedLaunchParams/>
-        <newPackagingParams/>
-        <modifiedPackagingParams>
-          <Parameter name="-extdir" value="ane"/>
-        </modifiedPackagingParams>
-      </airSettings>
-      <actionScriptSettings version="1"/>
-    </buildTarget>
-    <buildTarget buildTargetName="default" isCurrent="false" platformId="default">
-      <airSettings airCertificatePath="" airTimestamp="true" anePathSet="false" version="1">
-        <airExcludes/>
-        <anePaths/>
-        <newLaunchParams/>
-        <modifiedLaunchParams/>
-        <newPackagingParams/>
+        <newPackagingParams>
+          <Parameter location="placeBefore" name="-useLegacyAOT" placeBefore="-provisioning-profile" value="no"/>
+        </newPackagingParams>
         <modifiedPackagingParams/>
       </airSettings>
-      <multiPlatformSettings enabled="false" hideAneLibSymbols="0" includePlatformLibs="false" platformID="default" reducedSizePackaging="false" version="2"/>
+      <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" reducedSizePackaging="false" version="1"/>
       <actionScriptSettings version="1"/>
     </buildTarget>
-    <buildTarget airDownloadURL="https://market.android.com/details?id=com.adobe.air" androidSettingsVersion="2" buildTargetName="device" isCurrent="true" platformId="com.adobe.flexide.multiplatform.android.platform">
-      <airSettings airCertificatePath="C:/Users/lumea/Dropbox/Personal/cert/Certificates.p12" airTimestamp="true" anePathSet="true" version="1">
-        <airExcludes/>
-        <anePaths/>
-        <newLaunchParams/>
-        <modifiedLaunchParams/>
-        <newPackagingParams/>
-        <modifiedPackagingParams/>
-      </airSettings>
-      <multiPlatformSettings enabled="false" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.android.platform" reducedSizePackaging="false" version="2"/>
-      <actionScriptSettings version="1"/>
-    </buildTarget>
-    <buildTarget buildTargetName="default" isCurrent="false" platformId="com.qnx.flexide.multiplatform.qnx.platform">
+    <buildTarget airDownloadURL="" androidSettingsVersion="2" buildTargetName="device" isCurrent="true" platformId="com.adobe.flexide.multiplatform.android.platform">
       <airSettings airCertificatePath="" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes/>
         <anePaths/>
@@ -104,7 +80,31 @@
         <newPackagingParams/>
         <modifiedPackagingParams/>
       </airSettings>
-      <multiPlatformSettings enabled="false" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.qnx.flexide.multiplatform.qnx.platform" reducedSizePackaging="false" version="2"/>
+      <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.android.platform" reducedSizePackaging="false" version="1"/>
+      <actionScriptSettings version="1"/>
+    </buildTarget>
+    <buildTarget buildTargetName="default" isCurrent="true" platformId="default">
+      <airSettings airCertificatePath="" airTimestamp="true" anePathSet="false" version="1">
+        <airExcludes/>
+        <anePaths/>
+        <newLaunchParams/>
+        <modifiedLaunchParams/>
+        <newPackagingParams/>
+        <modifiedPackagingParams/>
+      </airSettings>
+      <multiPlatformSettings enabled="false" hideAneLibSymbols="0" includePlatformLibs="false" platformID="default" reducedSizePackaging="false" version="1"/>
+      <actionScriptSettings version="1"/>
+    </buildTarget>
+    <buildTarget basedOn="simulator" buildTargetName="custom" iosSettingsVersion="2" isCurrent="false" platformId="com.adobe.flexide.multiplatform.ios.platform" provisioningFile="/Users/fernandolunardelli/Dropbox/Personal/cert/Fernando_Lunardelli.mobileprovision" releasePackageType="ipa-app-store">
+      <airSettings airCertificatePath="/Users/fernandolunardelli/Dropbox/Personal/cert/Certificates.p12" airTimestamp="true" anePathSet="true" version="1">
+        <airExcludes/>
+        <anePaths/>
+        <newLaunchParams/>
+        <modifiedLaunchParams/>
+        <newPackagingParams/>
+        <modifiedPackagingParams/>
+      </airSettings>
+      <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" reducedSizePackaging="false" version="1"/>
       <actionScriptSettings version="1"/>
     </buildTarget>
   </buildTargets>

@@ -8,6 +8,8 @@ package
 	import flash.geom.Rectangle;
 	import flash.system.Capabilities;
 	
+	import org.opmon.Cache;
+	
 	import starling.core.Starling;
 	import starling.events.Event;
 	import starling.textures.Texture;
@@ -15,14 +17,17 @@ package
 	import starling.utils.ScaleMode;
 	
 	
-	[SWF( width="800", height="600", backgroundColor="#B7DC11", frameRate="24" )]
+	[SWF( width="600", height="600", backgroundColor="#B7DC11", frameRate="24" )]
 	public class GiroVault extends Sprite
 	{
 		private var _starling:Starling;
+		
 		[Embed(source = "/assets/logo.png")]
 		public static const LogoImage:Class;
 		
 		public var logoImage:Bitmap;
+		
+		public static var settings:Object = {};
 		
 		public function GiroVault()
 		{
@@ -32,18 +37,22 @@ package
 			
 			var fact:Number = stage.fullScreenHeight / stage.fullScreenWidth;
 			
-			var stageWidth:int  = (fact == 1.5) ? (372 *1.1): 360;
-			var stageHeight:int = (fact == 1.5) ? (558 *1.1): 480;
+			var stageWidth:int  = (fact == 1.5) ? (380): 380;
+			var stageHeight:int = (fact == 1.5) ? (570): 680;
 			var iOS:Boolean = Capabilities.manufacturer.indexOf("iOS") != -1;
 			
+			settings = Cache.load('girovault-settings');
+			if (!settings) {
+				settings = {};
+			}
 			
-			logoImage = new LogoImage()
+			logoImage = new LogoImage();
 				
 			logoImage.x = (stage.fullScreenWidth / 2) - (logoImage.width /2);
 			logoImage.y = (stage.fullScreenHeight / 2) - (logoImage.height /2); 	
 			addChild(logoImage);
 			
-			Starling.multitouchEnabled = false;  // useful on mobile devices
+			Starling.multitouchEnabled = true;  // useful on mobile devices
 			Starling.handleLostContext = !iOS;  // not necessary on iOS. Saves a lot of memory!
 			
 			// create a suitable viewport for the screen size
