@@ -8,8 +8,6 @@ package
 	import flash.geom.Rectangle;
 	import flash.system.Capabilities;
 	
-	import org.opmon.Cache;
-	
 	import starling.core.Starling;
 	import starling.events.Event;
 	import starling.textures.Texture;

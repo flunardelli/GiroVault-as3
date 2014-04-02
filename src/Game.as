@@ -182,8 +182,8 @@ const TWEET5:String = "Much better";//<=3000
 const TWEET6:String = "Awesome";//<=4000
 const TWEET7:String = "Marvelous";//<=5000
 const TWEET8:String = "Almost perfect"; //<=6000
-const TWEET9:String = "First"; //<=9000
-
+const TWEET9:String = "Perfect"; //<=9000
+const TWEET10:String = "You'll be remembered such a hero"; //<=10000
 //const TWEET_MSG:String = "TWEET THIS";
 //const PAUSED_MSG:String = "TAP TO BACK\n\nSOUND: %SOUND%\n\nACCELEROMETER: %ACCEL%";
 //const LEADERBOARD_MSG:String = "LEADERBOARD";
@@ -1328,6 +1328,8 @@ function getTweetMsg():String {
 		return TWEET8;
 	} else if (score >= 9000) {
 		return TWEET9;
+	} else if (score >= 10000) {
+		return TWEET10;
 	} else {
 		return TWEET1;		
 	}
