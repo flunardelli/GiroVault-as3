@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="sprites.png">
+	<!--
+	Created with ShoeBox
+	http://renderhjs.net/shoebox/
+	-->
+	<SubTexture name="accel-off"	x="0"	y="230"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+	<SubTexture name="accel-on"	x="0"	y="138"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+	<SubTexture name="back"	x="0"	y="184"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+	<SubTexture name="body"	x="0"	y="484"	width="17"	height="23" frameX="-0" frameY="-0" frameWidth="17" frameHeight="23"/>
+	<SubTexture name="exit"	x="0"	y="322"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+	<SubTexture name="leaderboard"	x="0"	y="276"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+	<SubTexture name="left"	x="190"	y="368"	width="189"	height="74" frameX="-0" frameY="-0" frameWidth="189" frameHeight="74"/>
+	<SubTexture name="pause"	x="0"	y="443"	width="40"	height="40" frameX="-0" frameY="-0" frameWidth="40" frameHeight="40"/>
+	<SubTexture name="right"	x="0"	y="368"	width="189"	height="74" frameX="-0" frameY="-0" frameWidth="189" frameHeight="74"/>
+	<SubTexture name="sound-off"	x="0"	y="92"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+	<SubTexture name="sound-on"	x="0"	y="46"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+	<SubTexture name="twitter"	x="0"	y="0"	width="320"	height="45" frameX="-0" frameY="-0" frameWidth="320" frameHeight="45"/>
+</TextureAtlas>
